@@ -14,29 +14,34 @@ Disclaimer - this is the actual .bash_history file from the breach (except one l
 so please do not investigate or poke at any IP addresses or domains here because they are real.
 ```
 
-## bash_history 1
+## .bash_history 1
 ### Question 1
 ```
 Question 1 - What version of PHP did they use?
 ```
 ### Writeup
-A .bash_history file indicates that a user would have input commands via the command line. This being know, if a user were working within a PHP environment they would have likely navigated to the php folder which contains a folder of the version of PHP being used. This can be done by concatinating the bash_history file and using a ```grep``` command as follows:
+A .bash_history file is a history of commands that a user would have input via the command line. This being know, if a user were working within a PHP environment they would have likely navigated to the php folder which contains another folder simply titled the PHP version number. This can be viewed by concatinating the .bash_history file and using a ```grep``` command as follows:
 ```
 cat bash_history| grep "/php/"
 ```
 <img src='version.PNG' width=600px>
 
-As can be seen in the results, a folder for version 7.1 can be seen. A user had edited various configuration files contained within the php folder. This answers our first question.
+As can be seen in the results, a folder for version 7.1 can be seen. A user had edited various configuration files contained within the php folder. This answers the first question.
+
 **Flag:** ```ctf{7.1}```
 
-## bash_history 2
+## .bash_history 2
 ### Question 2
 ```
 Question 2 - Make a list of all subdomains for epik.com that are present in this file. What's the last one alphabetically?
 ```
 ### Writeup
 A subdomain is a domain that is a part of a larger domain under the Domain Name System (DNS) hierarchy. A user's bash history concerning a subdomain could contain some kind of network related commands. The subdomain will likely be in the format of ```subdomain.epik.com```. Again using ```grep``` while concatenating the bash_history file the file can be quickly searched. The following command was used:
-```cat bash_history| grep ".epik.com" | sort | uniq```
+
+```
+cat bash_history| grep ".epik.com" | sort | uniq
+```
+
 By sorting the output and deleting repeat information using ```uniq``` the information becomes much more readable. The commands  ```curl``` ,```ping```, and ```dig``` stood out and could be seen sorted in alphabetical order.
 
 <img src='subdomain1.PNG' width=600px>
@@ -44,9 +49,10 @@ By sorting the output and deleting repeat information using ```uniq``` the infor
 <img src='subdomain2.PNG' width=600px>
 
 Out of the subdomains listed, ```tr.epik.com``` is the last one alphabetically answering question 2.
+
 **Flag:** ```ctf{tr.epik.com}```
 
-## bash_history 3.1
+## .bash_history 3.1
 ### Question 3.1
 ```
 Question 3 - There are credentials to a MySQL Database for 3 users. 
@@ -56,16 +62,21 @@ a challenge for each user. See details on which username/password combination to
 Question 3.1 - What is the root password?
 ```
 ### Writeup
-In order to access a MySQL database as root a user must use the command ```mysql``` provided with a password in order to log in. This can be done using the command ```mysql -u root -p``` then enter the password. Just searching for this command using ```grep``` does not result in any findings. Trying to find ```-u root``` does not result in any findings either. The following command was run to search for every instance of root.
-```cat bash_history| grep "root"```
+In order to access a MySQL database as root a user must use the command ```mysql``` provided with a password in order to log in. This can be done using the command ```mysql -u root -p``` followed by entering a password. Just searching for this command using ```grep``` does not result in any findings. Trying to find ```-u root``` does not result in any findings either. The following command was run to search for every instance of root.
+
+```
+cat bash_history| grep "root"
+```
+
 An interesting command could be seen containing ```u=root``` called ``pt-table-sync`` which contained the root user's password in **plain text** (I guess we can see now why epik had a security breach).
 
 <img src='root.PNG' width=800px>
 
 ```pt-table-sync``` is a one-way and bidirectional synchronization of table data within a MySQL database. In this case the user typed their password into the command in plain text answering question 3.1.
+
 **Flag:** ```ctf{Vc4unbMNB9wlH}```
 
-## bash_history 3.2
+## .bash_history 3.2
 ### Question 3.2
 ```
 Question 3 - There are credentials to a MySQL Database for 3 users. 
@@ -75,19 +86,23 @@ a challenge for each user. See details on which username/password combination to
 Question 3.2 - There are two other MySQL username/password pairs. What is the first one alphabetically?
 ```
 ### Writeup
-For this problem, rather looking for root, there are two other another MySQL users. The first alphabetically will be used for the flag. With the information from the previous question about MySQL users being used to authenticate with ```pt-table-sync``` a ```grep``` command can be run to see if there are any other users being used in syncing tables. A single user ```intrustrepl``` can be found along side root. 
+For this problem, rather than looking for root, there are two other MySQL users. The first alphabetically will be used for the flag. With the information from the previous question about MySQL users being used to authenticate with ```pt-table-sync``` a ```grep``` command can be run to see if there are any other users being used in syncing tables. A single user ```intrustrepl``` can be found along side root. 
 
 <img src='mysql1.PNG' width=800px>
 
 Another user must be found before their order can be determined alphabetically. A few other ```grep``` commands were run to try and sort the information further with no luck. A more general command was run which is the following:
-```cat bash_history| grep "mysql" | sort | uniq```
+
+```
+cat bash_history| grep "mysql" | sort | uniq
+```
+
 The information here is still a little dirty, but much more readable. Toward the bottom a ```mysqldump``` command was called by the user ```anonymize```. This user seems to be the first alphabetically providing the answer to this question.
 
 <img src='mysqldump.PNG' width=800px>
 
 **Flag:** ```ctf{anonymize_anonymize}```
 
-## bash_history 3.3
+## .bash_history 3.3
 ### Question 3.3
 ```
 Question 3 - There are credentials to a MySQL Database for 3 users. 
@@ -98,39 +113,48 @@ Question 3.3 - There are two other MySQL username/password pairs. What is the se
 ```
 
 ### Writeup
-With the information from Question 3.2 above this question can be easily solved. By using ```grep``` and looking for ```pt-table-sync``` the second username/password pair can be found in plain text. The user ```instrustrepl``` comes second alphabetically.
+With the information from Question 3.2 above, this question can be easily solved. By using ```grep``` and looking for ```pt-table-sync``` the second username/password pair can be found in plain text. The user ```instrustrepl``` comes second alphabetically.
 
 <img src='mysql1.PNG' width=800px>
 
 **Flag:** ```ctf{instrustrepl_QKJnJoua9916f}```
 
-## bash_history 4
+## .bash_history 4
 ### Question 4
 ```
 Question 4 - What is the full path for the custom script used to ban malicious IPs?
 ```
 ### Writeup
-A common practice for organizations is to have pre-built custom scripts to automate certain practices. In this case, a custom scripted used to ban malicious IP addresses must be found.  By running the following command, any instance of ban can be filtered:
-```cat bash_history| grep "ban" | sort | uniq```
+A common practice for organizations is to have pre-built custom scripts to automate certain practices. In this case, a custom scripte used to ban malicious IP addresses must be found.  By running the following command, any instance of ban in the bash_history can be filtered:
+
+```
+cat bash_history| grep "ban" | sort | uniq
+```
 
 <img src='ban.PNG' width=600px>
 
 A file named ```blockbanned``` can be seen and even given executable privileges with the command ```chmod +x```. This likely indicates that it is a custom script, answering question 4.
+
 **Flag:** ```ctf{/usr/local/bin/blockbanned}```
 
-## bash_history 5
+## .bash_history 5
 ### Question 5
 ```
 Question 5 - What is the name of the log file stored in the root directory (/, not /root)?
 ```
 ### Writeup
 In order for a user to work out of the root directory, it must first be navigated to by changing directories. This can be done with a simple ```cd /``` command. If there was a log file stored in the root directory, the user of this bash_history likely had to navigate there before viewing or editing this file. A ```grep``` command using the following syntax was used to filter for this information:
-```cat bash_history| grep "cd / "```
+
+```
+cat bash_history| grep "cd / "
+```
+
 The space after the ```/``` is vital as it sorts out all other directories that may have been navigated to.
 
 <img src='logedit.PNG' width=600px>
 
 A single command is returned in the bash_history containing both navigation to the root directory and a log file, answering question 5.
+
 **Flag:** ```ctf{epik.com.log}```
 
 ## Real-Word Application
